@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">v2rayNG</string>
+    <string name="app_name" translatable="false">Pomp Net mohammad V2rayng</string>
     <string name="app_widget_name">آلشت</string>
     <string name="app_tile_name">آلشت</string>
     <string name="app_tile_first_use">سی کرت ٱولی و کار بوردن ای ویژیی، ٱول ز من برنومه ی سرور اضاف کۊنین</string>
@@ -14,7 +14,7 @@
     <string name="pull_down_to_refresh">سی وانۊ کردن، بلگه ن بلم بکشین!</string>
 
     <!-- Notifications -->
-    <string name="notification_channel_service">سرویس v2rayNG</string>
+    <string name="notification_channel_service">Служба POMP NET</string>
     <string name="notification_channel_subscription_updates">ورۊ کردن اشتراکا</string>
     <string name="notification_channel_connection_checks">واجۊری منپیز</string>
     <string name="notification_action_stop_v2ray">واڌاشتن</string>
@@ -119,7 +119,7 @@
     <string name="toast_none_data_clipboard">هیچ داڌه ای من کلیپ بورد وۊجۊڌ نڌاره</string>
     <string name="toast_invalid_url">نشۊوی اینترنتی نا موئتبر هڌ</string>
     <string name="toast_insecure_url_protocol">نشۊوی اشتراک پوروتوکول نا ٱمن HTTP ن و کار مبرین</string>
-    <string name="server_lab_need_inbound">موطمئن بۊین ک پورت وۊرۊڌی وا سامووا ی جۊر هڌ</string>
+    <string name="server_lab_need_inbound">موطمئن بۊین ک پورت وۊرۊی وا سامووا ی جۊر هڌ</string>
     <string name="toast_malformed_json">کانفیگ نا موئتبر هڌ</string>
     <string name="server_lab_request_host6">هاست(SNI)(اختیاری)</string>
     <string name="toast_action_not_allowed">ای کار ممنۊع هڌ</string>
