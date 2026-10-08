@@ -1,4 +1,4 @@
-name: Build V2rayNG Pomp Net
+name: POMP NET Android APK
 
 on:
   workflow_dispatch:
@@ -6,13 +6,16 @@ on:
     branches:
       - master
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout full repository
-        uses: actions/checkout@v6
+        uses: actions/checkout@v4
         with:
           submodules: recursive
           fetch-depth: 0
@@ -31,30 +34,40 @@ jobs:
         run: |
           set -e
 
-          STRINGS="V2rayNG/app/src/main/res/values/strings.xml"
-          STRINGS_FA="V2rayNG/app/src/main/res/values-fa/strings.xml"
-
           python3 - <<'PY'
           from pathlib import Path
 
           files = [
               Path("V2rayNG/app/src/main/res/values/strings.xml"),
               Path("V2rayNG/app/src/main/res/values-fa/strings.xml"),
+              Path("V2rayNG/app/src/main/res/values-zh-rCN/strings.xml"),
+              Path("V2rayNG/app/src/main/res/values-zh-rTW/strings.xml"),
           ]
 
           for path in files:
+              if not path.exists():
+                  continue
               text = path.read_text(encoding="utf-8")
 
+              # تغییر نام اپلیکیشن
               text = text.replace(
                   '<string name="app_name" translatable="false">v2rayNG</string>',
-                  '<string name="app_name" translatable="false">V2rayNG Pomp Net</string>'
+                  '<string name="app_name" translatable="false">Pomp Net mohammad V2rayng</string>'
               )
 
+              # تغییر نام کانال نوتیفیکیشن سرویس به زبان‌های مختلف
+              text = text.replace(
+                  '<string name="notification_channel_service">v2rayNG 服务</string>',
+                  '<string name="notification_channel_service">POMP NET 服务</string>'
+              )
+              text = text.replace(
+                  '<string name="notification_channel_service">v2rayNG 服務</string>',
+                  '<string name="notification_channel_service">POMP NET 服務</string>'
+              )
               text = text.replace(
                   '<string name="notification_channel_service">v2rayNG service</string>',
                   '<string name="notification_channel_service">POMP NET service</string>'
               )
-
               text = text.replace(
                   '<string name="notification_channel_service">سرویس v2rayNG</string>',
                   '<string name="notification_channel_service">سرویس POMP NET</string>'
@@ -68,6 +81,8 @@ jobs:
           cat > V2rayNG/app/src/main/res/values/pompnet_colors.xml <<'EOF'
           <?xml version="1.0" encoding="utf-8"?>
           <resources>
+              <color name="window_background_light">#FF050509</color>
+              <color name="window_background_dark">#FF050509</color>
               <color name="pompnet_bg">#050509</color>
               <color name="pompnet_bg_secondary">#090612</color>
               <color name="pompnet_purple">#8B35FF</color>
@@ -83,9 +98,9 @@ jobs:
           </resources>
           EOF
 
-      - name: Build real Android APK
+      - name: Build Android APK
         run: |
-          ./gradlew :V2rayNG:assemblePlaystoreDebug --no-daemon --stacktrace
+          ./gradlew :V2rayNG:assembleDebug --no-daemon --stacktrace
 
       - name: Collect APK
         shell: bash
@@ -94,10 +109,10 @@ jobs:
           find V2rayNG/app/build/outputs/apk -type f -name "*.apk" -exec cp {} pompnet-apk/ \;
           ls -lh pompnet-apk
 
-      - name: Upload Pomp Net APK
+      - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
-          name: V2rayNG-Pomp-Net
+          name: POMP-NET-V2rayNG
           path: pompnet-apk/*.apk
           if-no-files-found: error
           retention-days: 30
