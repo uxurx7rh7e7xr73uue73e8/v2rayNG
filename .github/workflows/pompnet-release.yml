@@ -1,0 +1,120 @@
+name: POMP NET Release APK
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout full repository
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Apply Pomp Net branding
+        shell: bash
+        run: |
+          set -e
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          files = [
+              Path("V2rayNG/app/src/main/res/values/strings.xml"),
+              Path("V2rayNG/app/src/main/res/values-fa/strings.xml"),
+              Path("V2rayNG/app/src/main/res/values-zh-rCN/strings.xml"),
+              Path("V2rayNG/app/src/main/res/values-zh-rTW/strings.xml"),
+          ]
+
+          for path in files:
+              if not path.exists():
+                  continue
+              text = path.read_text(encoding="utf-8")
+
+              # تغییر نام اپلیکیشن
+              text = text.replace(
+                  '<string name="app_name" translatable="false">v2rayNG</string>',
+                  '<string name="app_name" translatable="false">Pomp Net mohammad V2rayng</string>'
+              )
+
+              # تغییر نام کانال نوتیفیکیشن سرویس به زبان‌های مختلف
+              text = text.replace(
+                  '<string name="notification_channel_service">v2rayNG 服务</string>',
+                  '<string name="notification_channel_service">POMP NET 服务</string>'
+              )
+              text = text.replace(
+                  '<string name="notification_channel_service">v2rayNG 服務</string>',
+                  '<string name="notification_channel_service">POMP NET 服務</string>'
+              )
+              text = text.replace(
+                  '<string name="notification_channel_service">v2rayNG service</string>',
+                  '<string name="notification_channel_service">POMP NET service</string>'
+              )
+              text = text.replace(
+                  '<string name="notification_channel_service">سرویس v2rayNG</string>',
+                  '<string name="notification_channel_service">سرویس POMP NET</string>'
+              )
+
+              path.write_text(text, encoding="utf-8")
+          PY
+
+          mkdir -p V2rayNG/app/src/main/res/values
+
+          cat > V2rayNG/app/src/main/res/values/pompnet_colors.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="window_background_light">#FF050509</color>
+              <color name="window_background_dark">#FF050509</color>
+              <color name="pompnet_bg">#050509</color>
+              <color name="pompnet_bg_secondary">#090612</color>
+              <color name="pompnet_purple">#8B35FF</color>
+              <color name="pompnet_blue">#168CFF</color>
+              <color name="pompnet_pink">#FF3DBB</color>
+              <color name="pompnet_text">#FFFFFF</color>
+              <color name="pompnet_text_secondary">#BDB7CC</color>
+              <color name="pompnet_glass">#181225</color>
+              <color name="pompnet_glass_2">#241735</color>
+              <color name="pompnet_border">#684A91</color>
+              <color name="pompnet_success">#37E6A5</color>
+              <color name="pompnet_error">#FF5577</color>
+          </resources>
+          EOF
+
+      - name: Build Android APK
+        run: |
+          ./gradlew :V2rayNG:assembleDebug --no-daemon --stacktrace
+
+      - name: Collect APK
+        shell: bash
+        run: |
+          mkdir -p pompnet-apk
+          find V2rayNG/app/build/outputs/apk -type f -name "*.apk" -exec cp {} pompnet-apk/ \;
+          ls -lh pompnet-apk
+
+      - name: Upload to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          files: pompnet-apk/*.apk
+          tag_name: v1.0.${{ github.run_number }}
+          name: Pomp Net Release v1.0.${{ github.run_number }}
+          body: "نسخه جدید برنامه Pomp Net با تنظیمات اختصاصی، پس‌زمینه تیره و برندینگ سفارشی‌سازی شده آماده دانلود است."
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
