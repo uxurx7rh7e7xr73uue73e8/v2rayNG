@@ -1,0 +1,103 @@
+name: Build V2rayNG Pomp Net
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout full repository
+        uses: actions/checkout@v6
+        with:
+          submodules: recursive
+          fetch-depth: 0
+
+      - name: Setup Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Make Gradle executable
+        run: chmod +x ./gradlew
+
+      - name: Apply Pomp Net branding
+        shell: bash
+        run: |
+          set -e
+
+          STRINGS="V2rayNG/app/src/main/res/values/strings.xml"
+          STRINGS_FA="V2rayNG/app/src/main/res/values-fa/strings.xml"
+
+          python3 - <<'PY'
+          from pathlib import Path
+
+          files = [
+              Path("V2rayNG/app/src/main/res/values/strings.xml"),
+              Path("V2rayNG/app/src/main/res/values-fa/strings.xml"),
+          ]
+
+          for path in files:
+              text = path.read_text(encoding="utf-8")
+
+              text = text.replace(
+                  '<string name="app_name" translatable="false">v2rayNG</string>',
+                  '<string name="app_name" translatable="false">V2rayNG Pomp Net</string>'
+              )
+
+              text = text.replace(
+                  '<string name="notification_channel_service">v2rayNG service</string>',
+                  '<string name="notification_channel_service">POMP NET service</string>'
+              )
+
+              text = text.replace(
+                  '<string name="notification_channel_service">سرویس v2rayNG</string>',
+                  '<string name="notification_channel_service">سرویس POMP NET</string>'
+              )
+
+              path.write_text(text, encoding="utf-8")
+          PY
+
+          mkdir -p V2rayNG/app/src/main/res/values
+
+          cat > V2rayNG/app/src/main/res/values/pompnet_colors.xml <<'EOF'
+          <?xml version="1.0" encoding="utf-8"?>
+          <resources>
+              <color name="pompnet_bg">#050509</color>
+              <color name="pompnet_bg_secondary">#090612</color>
+              <color name="pompnet_purple">#8B35FF</color>
+              <color name="pompnet_blue">#168CFF</color>
+              <color name="pompnet_pink">#FF3DBB</color>
+              <color name="pompnet_text">#FFFFFF</color>
+              <color name="pompnet_text_secondary">#BDB7CC</color>
+              <color name="pompnet_glass">#181225</color>
+              <color name="pompnet_glass_2">#241735</color>
+              <color name="pompnet_border">#684A91</color>
+              <color name="pompnet_success">#37E6A5</color>
+              <color name="pompnet_error">#FF5577</color>
+          </resources>
+          EOF
+
+      - name: Build real Android APK
+        run: |
+          ./gradlew :V2rayNG:assemblePlaystoreDebug --no-daemon --stacktrace
+
+      - name: Collect APK
+        shell: bash
+        run: |
+          mkdir -p pompnet-apk
+          find V2rayNG/app/build/outputs/apk -type f -name "*.apk" -exec cp {} pompnet-apk/ \;
+          ls -lh pompnet-apk
+
+      - name: Upload Pomp Net APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: V2rayNG-Pomp-Net
+          path: pompnet-apk/*.apk
+          if-no-files-found: error
+          retention-days: 30
